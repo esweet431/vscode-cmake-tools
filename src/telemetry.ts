@@ -18,6 +18,8 @@ interface IPackageInfo {
     aiKey: string;
 }
 
+const outputWindow = vscode.window.createOutputChannel("CMake Telemetry");
+
 export class ExperimentationTelemetry implements IExperimentationTelemetry {
     private sharedProperties: Record<string, string> = {};
 
@@ -95,9 +97,14 @@ export async function deactivate(): Promise<void> {
 
 export function logEvent(eventName: string, properties?: Properties, measures?: Measures): void {
     const sendTelemetry = () => {
+        const value = JSON.stringify({eventName, properties, measures}, null, 2);
         if (experimentationTelemetry) {
             experimentationTelemetry.sendTelemetryEvent(eventName, properties, measures);
+            outputWindow.appendLine(value);
+        } else {
+            outputWindow.appendLine(`NOT SENT: ${value}`);
         }
+        outputWindow.appendLine('-----------------------------------------------------');
     };
 
     if (initializationPromise) {
